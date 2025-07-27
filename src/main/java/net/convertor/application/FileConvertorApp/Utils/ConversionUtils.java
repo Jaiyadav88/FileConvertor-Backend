@@ -10,10 +10,14 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,10 +46,32 @@ public class ConversionUtils {
             case "pdf->jpg":
                 pdfTojpg(input, output);
                 break;
+            case "pdf->docx":
+                pdfToword(input, output);
+                break;
             default:
                 throw new UnsupportedOperationException("Unsupported conversion: " + inExt + " to " + targetFormat);
         }
         return output;
+    }
+    private static void pdfToword(Path pdfPath, Path wordPath) throws IOException {
+        //logic for converting PDF to Word
+        String text;
+        try (PDDocument pdf = PDDocument.load(pdfPath.toFile())) {
+            PDFTextStripper stripper = new PDFTextStripper();
+            stripper.setSortByPosition(true);
+            text = stripper.getText(pdf);
+            try (XWPFDocument docx = new XWPFDocument();
+                 FileOutputStream out = new FileOutputStream(wordPath.toFile())) {
+                XWPFParagraph para = docx.createParagraph();
+                XWPFRun run = para.createRun();
+                for (String line : text.split("\\r?\\n")) {
+                    run.setText(line);
+                    run.addBreak();
+                }
+                docx.write(out);
+            }
+        }
     }
     private static void pdfTojpg(Path pdfPath, Path jpgPath) throws IOException {
         try (PDDocument doc = PDDocument.load(pdfPath.toFile())) {
