@@ -19,7 +19,7 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/api/files")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "https://file-convertor-frontend-omega.vercel.app/")
 public class FileController {
     private final FileConversionService conversionService;
     @PostMapping("/convert")
